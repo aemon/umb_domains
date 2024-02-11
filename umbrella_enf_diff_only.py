@@ -41,16 +41,31 @@ def PostDomainList(domain_list, url):
     if(req.status_code == 202):
         tqdm.write("\n SUCCESS: domain list was accepted, HTTP response: 202")
     else:
-        print("An error has ocurred with the following code %(error)s. Trying again in 60 sec" % {'error': req.status_code} )
+        print("An error has occurred with the following code %(error)s. Trying again in 60 sec" % {'error': req.status_code} )
         time.sleep(60)
         PostDomainList(domain_list,url) 
 
 def GetPhishingList():
     new_list = requests.get('https://fmisp.ncscc.gov.ua/feed/fraud_phishing.txt')
+
+
 def main():
-    with open("fraud_phishing2.txt") as file:
+    old_list = []
+    new_list = []
+
+    with open("fraud_phishing_old.txt") as file:
         for item in file:
-            domain_list.append(item.strip())
+            old_list.append(item.strip())
+    print("Number of domains in old list", len(old_list))
+
+    with open("fraud_phishing_new.txt") as file:
+        for item in file:
+            new_list.append(item.strip())
+    print("Number of domains in new list", len(new_list))
+
+
+    domain_list = list(set(new_list) - set(old_list))
+
     print("Number of domains", len(domain_list))
     input("Press enter:")
 
@@ -66,10 +81,9 @@ def main():
             domain_list_payload = []
             continue
         domain_list_payload.append(CreateDomainPayload(domain))
+        tqdm.write(domain)
     PostDomainList(domain_list_payload, url_post)
     tqdm.write ("All Domains Added")
-
-        
 
 if __name__ == "__main__":
     main()
